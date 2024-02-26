@@ -1,10 +1,9 @@
 <?php
 session_start();
 if (isset($_SESSION['user'])) {
-  header("Location: ../user/home.php"); //if user is registered , redirect it to  home/dashboard page no need to signup again
+  header("Location: ./adminDashboard.php"); //if admin is registered , redirect it to  home/dashboard page no need to signup again
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -32,6 +31,33 @@ if (isset($_SESSION['user'])) {
   <!-- ==== RemixIcon link ==== -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet" />
 
+  <!-- ==Inline CSS== -->
+  <style>
+      .signup__admin{
+        width: 50%;
+      }
+
+    .admin__signup__container {
+      display: grid;
+      place-items: center;
+    }
+
+    .admin__signup__form__container{
+      display: flex;
+      flex-direction: column;
+      margin-left: 4rem;
+    }
+    .toggle__admin{
+      margin-left: 376px;
+    }
+    .register__admin{
+      width: 48%;
+      margin-left: 30rem;
+    }
+  </style>
+
+
+
 </head>
 
 <body bgcolor="#eee">
@@ -39,15 +65,15 @@ if (isset($_SESSION['user'])) {
   <!-- =================================================================== -->
 
   <section class="signup__wrapper">
-    <div class="signup__container">
+    <div class="admin__signup__container">
 
       <!-- =========== content left ============= -->
-      <div class="signup__content__left">
+      <div class="signup__content__left signup__admin">
         <div class="signup__intro login__intro">
-          <h3>Sign up</h3>
+          <h3 style="text-align: center;">Admin Sign up</h3>
 
-          <form action="sign-up.php" method="POST" id="signupForm">
-            <div class="signup__form__container">
+          <form action="./admin-Sign-up.php" method="POST" id="signupForm">
+            <div class="admin__signup__form__container">
 
               <div class="fields">
                 <label for="fullname">Full Name <span id="must">&#x002A;</span></label>
@@ -72,14 +98,14 @@ if (isset($_SESSION['user'])) {
               <div class="fields">
                 <label for="password">Password <span id="must">&#x002A;</span></label>
                 <input type="password" class="input-fields" name="pwd" id="pwd" placeholder="">
-                <span class="password-toggle" onclick="togglePassword('pwd')">SHOW</span>
+                <span class="password-toggle toggle__admin" onclick="togglePassword('pwd')">SHOW</span>
 
               </div>
 
               <div class="fields">
                 <label for="cpassword">Confirm Password <span id="must">&#x002A;</span></label>
                 <input type="password" class="input-fields" name="cpwd" id="cpwd" placeholder="">
-                <span class="password-toggle" onclick="togglePassword('cpwd')">SHOW</span>
+                <span class="password-toggle toggle__admin" onclick="togglePassword('cpwd')">SHOW</span>
 
               </div>
 
@@ -88,10 +114,7 @@ if (isset($_SESSION['user'])) {
                 <input type="text" class="input-fields" name="address" id="address" placeholder="">
               </div>
 
-              <div class="fields">
-                <label for="library_card_number">Library Card Number</label>
-                <input type="text" class="input-fields" name="library_card_number" id="library_card_number" placeholder="">
-              </div>
+              
 
               <div class="fields">
                 <input type="submit" class="btn-secondary btn-primary" name="cancel" value="Cancel" onclick="resetForm()">
@@ -104,23 +127,10 @@ if (isset($_SESSION['user'])) {
             </div>
 
         </div>
-        <div class="links">By signing up you have agreed to our <a href="../../pages/terms-and-conditions.html">Terms and
-            Conditions</a> along with <a href="../../pages/privacy-policy.html">Privacy Policy</a>
-          <br> <br> <small> Already have an account ? </small><a href="../validation/log-in.php" target="_blank">Log in</a>
-        </div>
+          <h5 style="text-align: center; font-size: 1.4rem; font-weight: 400;"> Already have an account ? <a href="./admin-Log-in.php">Log in</a> </h5> 
         </form>
 
       </div>
-
-      <!-- =========== content right ============= -->
-      <div class="signup__content__right">
-        <div class="welcome__content">
-          <img src="../../svg/R__logo_1.svg" alt="">
-          <h3>Welcome to <br><span>Readify</span> </h3>
-        </div>
-
-      </div>
-
     </div>
 
     <!--  ===== php section starts ====-->
@@ -133,8 +143,9 @@ if (isset($_SESSION['user'])) {
       $pwd = $_POST['pwd'];
       $cpwd = $_POST['cpwd'];
       $address = $_POST['address'];
-      $library_card_number = isset($_POST['library_card_number']) ? $_POST['library_card_number'] : NULL;
+   
 
+      //HashPassword
       $pwdHash = password_hash($pwd, PASSWORD_DEFAULT);
 
       //for any errors in any fields
@@ -162,7 +173,7 @@ if (isset($_SESSION['user'])) {
         array_push($errors, "Mobile no. must contain 10 digits");
       }
 
-      if (!preg_match("/^[a-zA-Z ]*$/", $fullname)) {
+      if (!preg_match("/^[a-zA-Z\s]*$/", $fullname)) {
         array_push($errors, "Fullname should only contain letters and spaces");
       }
 
@@ -173,7 +184,8 @@ if (isset($_SESSION['user'])) {
       require_once "../config.php"; //database config file
 
 
-      $sql = "SELECT * FROM library_users WHERE email = '$email'";
+      // ==== check for duplicate email =====
+      $sql = "SELECT * FROM admin WHERE email = '$email'";
       $result = mysqli_query($conn, $sql);
       $rowCount = mysqli_num_rows($result);
 
@@ -181,18 +193,26 @@ if (isset($_SESSION['user'])) {
         array_push($errors, 'Email already exists');
       }
 
+      // ==== check for duplicate username ====
+      $usernameCheckQuery = "SELECT * FROM admin WHERE username = '$username'";
+      $usernameResult = mysqli_query($conn, $usernameCheckQuery);
+      $usernameRowCount = mysqli_num_rows($usernameResult);
+
+      if ($usernameRowCount > 0) {
+        array_push($errors, 'Username already exists');
+      }
+
 
       if (count($errors) > 0) {
         foreach ($errors as $error) {
-          echo "<section class='alert-error-msg'>$error</section>";
+          echo "<section class='alert-error-msg  register__admin'>$error</section>";
         }
       } else {
 
-        // Generate a random alphanumeric library card number
-        $library_card_number = generateRandomString(8);
+       
 
         // insert data into database
-        $sql = "INSERT INTO library_users(fullname, username, email, phone_number, pwd, address, library_card_number)
+        $sql = "INSERT INTO admin(fullname, username, email, phone_number, pwd, address,pic)
         VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         //mysqli_stmt_init() -> mysqli_stmt_init() function initializes a statement and returns an object suitable for mysqli_stmt_prepare(). 
@@ -201,27 +221,18 @@ if (isset($_SESSION['user'])) {
         $prepareStmt = mysqli_stmt_prepare($stmt, $sql);
 
         if ($prepareStmt) {
-          mysqli_stmt_bind_param($stmt, "sssisss", $fullname, $username, $email, $phone_number, $pwdHash, $address, $library_card_number);
-          mysqli_stmt_execute($stmt);
-          echo "<section class='alert-success-msg'>Successfully Registered!!! Your Library Card Number is $library_card_number. Proceed to login</section>";
+          $pic = 'user_profile_default.png';
+
+          mysqli_stmt_bind_param($stmt, "sssisss", $fullname, $username, $email, $phone_number, $pwdHash, $address,$pic);
+          mysqli_stmt_execute($stmt);   
+          echo "<section class='alert-success-msg register__admin'>Successfully Registered!!! Proceed to login</section>";
         } else {
-          die("Something went wrong");
+          die("Something went wrong"); 
         }
       }
     }
 
-    // Function to generate a random alphanumeric string
-    function generateRandomString($length)
-    {
-      $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      $randomString = '';
-
-      for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, strlen($characters) - 1)];
-      }
-
-      return $randomString;
-    }
+ 
     ?>
 
 
@@ -254,5 +265,6 @@ if (isset($_SESSION['user'])) {
     }
   </script>
 
+</body>
 
 </html>

@@ -1,12 +1,13 @@
 <?php 
     session_start();
-    if(isset($_SESSION['user'])){
-        header("Location: ../user/home.php"); //if user is registered , redirect it to  home/dashboard page
-    }
+    if(isset($_SESSION['admin'])){
+        header("Location: ./adminDashboard.php"); //if admin is registered , redirect it to  home/dashboard page
+      exit();
+      }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -41,15 +42,15 @@
         <div class="login__intro">
           <img src="../../svg/R__logo_2.svg">
           <h2>Login</h2>
-          <p>Welcome Back <br>
-            <span>We’re thrilled to see you again &#x1F44B; <br>Please login to get back to your account</span>
+          <p>Welcome Back Admin!<br>
+            <span>Please login to get back to your dashboard</span>
           </p>
         </div>
 
         <!-- ========= Form ============== -->
-        <form action="../validation/log-in.php" method="POST">
+        <form action="./admin-Log-in.php" method="POST">
 
-          <div class="field input">
+        <div class="field input">
             <label for="email">Email</label>
             <input type="email" name="email" id="email" placeholder="">
           </div>
@@ -57,27 +58,20 @@
           <div class="field input">
             <label for="password">Password</label>
             <input type="password" name="pwd" id="pwd" placeholder="">
-
-
           </div>
 
           <div class="field">
-            <input type="submit" class="btn-primary" name="login" value="Login" required>
+            <input type="submit" class="btn-primary btn-submit" name="login" value="Login" required>
 
           </div>
 
           <div class="links">Don't have an account ?
-            <a href="../validation/sign-up.php" target="_blank">Sign Up</a>
-          </div>
-
-          <div class="links">Log in as 
-            <a href="../admin/adminLogin.php">Admin</a>
+            <a href="./admin-Sign-up.php">Sign Up</a>
           </div>
 
 
         </form>
       </div>
-
     </div>
 
     <!-- =========== php section starts ============== -->
@@ -90,20 +84,19 @@
 
         require_once "../config.php";
 
-        $sql = "SELECT * FROM library_users WHERE email = '$email'";
+        $sql = "SELECT * FROM `admin` WHERE email = '$email'";
         $result = mysqli_query($conn,$sql);
-
-        $user = mysqli_fetch_array($result, MYSQLI_ASSOC);
-        if($user){
+        
+        if($admin= mysqli_fetch_assoc($result)){
 
           //checking encrypted pwd
-          
-          if(password_verify($pwd,$user['pwd'])){
+          if(password_verify($pwd,$admin['pwd'])){
 
-            //creating session as : dashboard page is available for registered users only
+            //creating session as : dashboard page is available for registered admins only
             session_start();
-            $_SESSION['user'] = 'yes';
-            header("Location: ../user/home.php");
+            $_SESSION['admin'] = $admin['username'];
+            $_SESSION['pic'] = $admin['pic'];
+            header("Location: ./adminDashboard.php");
             die();
           }else{
             echo "<section class='alert-warning-msg'>Password does not match</section>";
@@ -113,14 +106,15 @@
           echo "<section class='alert-warning-msg'>Email does not exist</section>";
         }
       }
+      
     
     ?>
-
     <!-- =========== php section ends ============== -->
   </section>
 
   <!-- ==== JavaScript Link ==== -->
   <script src="../../js/app.js"></script>
-</body>
 
+  
+</body>
 </html>

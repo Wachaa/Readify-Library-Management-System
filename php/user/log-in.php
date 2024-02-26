@@ -1,11 +1,16 @@
+<?php 
+    session_start();
+    if(isset($_SESSION['user'])){
+        header("Location: ./list_book_for_user.php"); //if user is registered , redirect it to  home/dashboard page
+    }
+?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login</title>
+  <title>Login</title>
   <!-- Title icon -->
   <link rel="icon" href="../../icons/title_icon.png" type="image/x-icon">
 
@@ -21,6 +26,9 @@
   <!-- ==== Boxicons link ==== -->
   <link rel="stylesheet" href="https://unpkg.com/boxicons@latest/css/boxicons.min.css">
 
+  <!-- ==== RemixIcon link ==== -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet" />
+
 </head>
 
 <body bgcolor="#eee">
@@ -31,26 +39,24 @@
       <div class="box form__box">
 
         <div class="login__intro">
-          <img src="../../svg/R__logo_2.svg"></div>
-          
-        <div class="login__intro login__intro__admin">
-        <p>Welcome Admin</p>
+          <img src="../../svg/R__logo_2.svg">
+          <h2>Login</h2>
+          <p>Welcome Back <br>
+            <span>We’re thrilled to see you again &#x1F44B; <br>Please login to get back to your account</span>
+          </p>
         </div>
 
-
         <!-- ========= Form ============== -->
-        <form action="../admin/adminLogin.html" method="POST" class="admin-form-container">
+        <form action="./log-in.php" method="POST">
 
-          <div class="field input">
-            <label for="name">Name</label>
-            <input type="text" name="adminName" id="adminName">
+        <div class="field input">
+            <label for="email">Email</label>
+            <input type="email" name="email" id="email" placeholder="">
           </div>
 
           <div class="field input">
             <label for="password">Password</label>
-            <input type="password" name="Adinpwd" id="Adminpwd">
-
-
+            <input type="password" name="pwd" id="pwd" placeholder="">
           </div>
 
           <div class="field">
@@ -58,13 +64,16 @@
 
           </div>
 
+          <div class="links">Don't have an account ?
+            <a href="./sign-up.php">Sign Up</a>
+          </div>
+
         </form>
       </div>
-
     </div>
 
     <!-- =========== php section starts ============== -->
-    <!-- <?php 
+    <?php 
       if(isset($_POST['login'])){
         $email = $_POST['email'];
         $pwd = $_POST['pwd'];
@@ -76,8 +85,7 @@
         $sql = "SELECT * FROM library_users WHERE email = '$email'";
         $result = mysqli_query($conn,$sql);
 
-        $user = mysqli_fetch_array($result, MYSQLI_ASSOC);
-        if($user){
+        if($user=mysqli_fetch_array($result)){
 
           //checking encrypted pwd
           
@@ -85,8 +93,10 @@
 
             //creating session as : dashboard page is available for registered users only
             session_start();
-            $_SESSION['user'] = 'yes';
-            header("Location: ../user/home.php");
+            $_SESSION['user'] = $user['username'];
+            $_SESSION['pic'] = $user['pic'];
+
+            header("Location: ./list_book_for_user.php");
             die();
           }else{
             echo "<section class='alert-warning-msg'>Password does not match</section>";
@@ -97,10 +107,13 @@
         }
       }
     
-    ?> -->
-
+    ?>
     <!-- =========== php section ends ============== -->
   </section>
 
+  <!-- ==== JavaScript Link ==== -->
+  <script src="../../js/app.js"></script>
+
+  
 </body>
 </html>
